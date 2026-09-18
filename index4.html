@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
+    />
+    <title>Document</title>
+  </head>
+  <body>
+    <pre id="map" style="line-height: 1; text-align: center"></pre>
+    <button class="button" onclick="moveBackward()">←</button>
+    <button class="button" onclick="moveForward()">→</button>
+    <script>
+      const n = 20;
+      let position = 4;
+      let enemy = 7;
+
+      function moveForward() {
+        position++;
+        if (position == n) position = 0;
+        draw();
+      }
+      function moveBackward() {
+        position--;
+        if (position == -1) position = n - 1;
+        draw();
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.code == "ArrowLeft") {
+          moveBackward();
+        }
+        if (event.code == "ArrowRight") {
+          moveForward();
+        }
+      });
+
+      function draw() {
+        // top frame
+        let result = "┏";
+        let i = 0;
+        while (i < n) {
+          result = result + "-";
+          i++;
+        }
+
+        result = result + "┓";
+        result = result + "\n";
+        //middle
+        result = result + "|";
+        i = 0;
+        while (i < n) {
+          if (i == position) {
+            result = result + "*";
+          } else if (i == enemy) {
+            result = result + "$";
+          } else {
+            result = result + " ";
+          }
+          i++;
+        }
+        result = result + "|";
+
+        result = result + "\n";
+
+        //bottom
+        result = result + "┗";
+        i = 0;
+        while (i < n) {
+          result = result + "-";
+          i++;
+        }
+        result = result + "┛";
+        document.getElementById("map").textContent = result;
+      }
+      draw();
+    </script>
+    <!-- <div id="output"></div>
+    <script>
+      const output = document.getElementById("output");
+      let i = 0;
+      let n = 4;
+      while (i < 10) {
+        i++;
+        output.innerHTML =
+          output.innerHTML +
+          `<div class="box"
+      style="margin: 30px auto; text-align: center; width:200px;">${n} * ${i} = ${n * i}</div>`;
+      }
+    </script> -->
+  </body>
+</html>

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Manrope:wght@200..800&display=swap"
+      rel="stylesheet"
+    />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .board {
+        background-image: url(./images.jpeg);
+        background-size: cover;
+        position: relative;
+        background-color: bisque;
+        margin: 0 auto;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .player,
+      .food {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        text-align: center;
+        font-size: 10px;
+        /* border-radius: 50%;
+        background-color: rgb(200, 216, 230); */
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #score,
+      #timer,
+      #highScore {
+        margin: 0 auto 3px auto;
+        text-align: center;
+        font-family: "Audiowide", sans-serif;
+        color: rgb(248, 240, 0);
+        border-radius: 14px;
+        background-color: rgb(110, 241, 123);
+        width: 200px;
+        background-size: cover;
+        background-position: center;
+        background-image: url(./bc.jpg);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="score">Current Score: 0</div>
+    <div id="timer" style="background-image: url(./bc2.jpg); color: black">
+      Time: 30s
+    </div>
+    <div id="highScore">0</div>
+    <div class="board" id="board">
+      <div class="player" style="top: 0; left: 0" id="player">👽</div>
+      <div class="food" id="food" style="top: 100px; left: 100px">🪐</div>
+    </div>
+
+    <script>
+      const bonus = new Audio("bonus.mp3");
+      const player = document.getElementById("player");
+      const food = document.getElementById("food");
+      const board = document.getElementById("board");
+      let highScoreDisplay = document.getElementById("highScore");
+
+      let playerX = 0;
+      let playerY = 0;
+      let foodX = 100;
+      let foodY = 100;
+      let score = 0;
+      let boardW = 200;
+      let boardH = 200;
+      let direction = "";
+      let speed = 200;
+      let spacePressed = false;
+
+      let highScore = localStorage.getItem("high") || 0;
+      highScoreDisplay.textContent = `High Score: ${highScore}`;
+      board.style.width = `${boardW}px`;
+      board.style.height = `${boardH}px`;
+
+      function moveUp() {
+        playerY -= 10;
+        if (playerY < 0) {
+          playerY = boardH - 10;
+        }
+        draw();
+      }
+
+      function moveDown() {
+        playerY += 10;
+        if (playerY > boardH - 10) {
+          playerY = 0;
+        }
+        draw();
+      }
+
+      function moveRight() {
+        playerX += 10;
+        if (playerX > boardW - 10) {
+          playerX = 0;
+        }
+        draw();
+      }
+
+      function moveLeft() {
+        playerX -= 10;
+        if (playerX < 0) {
+          playerX = boardW - 10;
+        }
+        draw();
+      }
+
+      function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+      }
+
+      function changeDirection(newDirection) {
+        direction = newDirection;
+      }
+
+      function gameLoop() {
+        if (direction == "right") moveRight();
+        else if (direction == "left") moveLeft();
+        else if (direction == "up") moveUp();
+        else if (direction == "down") moveDown();
+      }
+
+      function draw() {
+        if (foodX == playerX && foodY == playerY) {
+          score++;
+          document.getElementById("score").textContent =
+            `Current Score: ${score}`;
+          bonus.play();
+          foodX = getRandomInt(20) * 10;
+          foodY = getRandomInt(20) * 10;
+        }
+
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem("high", highScore);
+          highScoreDisplay.textContent = `High Score: ${highScore}`;
+        }
+
+        player.style.top = `${playerY}px`;
+        player.style.left = `${playerX}px`;
+        food.style.left = `${foodX}px`;
+        food.style.top = `${foodY}px`;
+
+        let difX = Math.abs(playerX - foodX);
+        let difY = Math.abs(playerY - foodY);
+
+        if ((difX == 10 || difX == 0) && (difY == 10 || difY == 0)) {
+          player.textContent = "🚀";
+        } else {
+          player.textContent = "👽";
+          food.textContent = "🪐";
+        }
+      }
+
+      let gameInterval = setInterval(gameLoop, speed);
+
+      document.addEventListener("keydown", function (event) {
+        if (event.code == "ArrowUp" || event.code == "KeyW") {
+          changeDirection("up");
+        } else if (event.code == "ArrowDown" || event.code == "KeyS") {
+          changeDirection("down");
+        } else if (event.code == "ArrowRight" || event.code == "KeyD") {
+          changeDirection("right");
+        } else if (event.code == "ArrowLeft" || event.code == "KeyA") {
+          changeDirection("left");
+        }
+
+        if (event.code == "Space" && !spacePressed) {
+          spacePressed = true;
+          speed = 50;
+          clearInterval(gameInterval);
+          gameInterval = setInterval(gameLoop, speed);
+        }
+      });
+
+      document.addEventListener("keyup", function (event) {
+        if (event.code == "Space") {
+          spacePressed = false;
+          speed = 200;
+          clearInterval(gameInterval);
+          gameInterval = setInterval(gameLoop, speed);
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const display = document.getElementById("timer");
+        let timeLeft = 30;
+        const countdown = setInterval(function () {
+          display.textContent = `Time: ${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert(`Score:${score}!`);
+            location.reload();
+          } else {
+            timeLeft--;
+          }
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
